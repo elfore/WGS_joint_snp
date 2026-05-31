@@ -1,0 +1,11 @@
+# =========================================================================================
+# 输入输出路径配置 (根据实际项目修改)
+# =========================================================================================
+# 存放样本 *.g.vcf.gz 及 *.g.vcf.gz.tbi 的目录
+gvcf_dir: "/mnt/gpfs1/Users/yangjinxurong/projects/WGS/joint_snp/test_data/gvcf_38_fixed"
+
+# 全基因组参考 Fasta 绝对路径 (对应 GATK -R 参数)
+bed_dir: "/mnt/gpfs1/Users/yangjinxurong/projects/WGS/joint_snp/data/hg38_chrom_beds/"
+genome_version: "hg38"
+# 结果输出总目录
+outdir: "/mnt/gpfs1/Users/yangjinxurong/projects/WGS/joint_snp/results/joint_calling_SNP_38"
