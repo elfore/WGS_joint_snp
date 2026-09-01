@@ -1,11 +1,16 @@
-# =========================================================================================
-# 输入输出路径配置 (根据实际项目修改)
-# =========================================================================================
-# 存放样本 *.g.vcf.gz 及 *.g.vcf.gz.tbi 的目录
-gvcf_dir: "/mnt/gpfs1/Users/yangjinxurong/projects/WGS/joint_snp/test_data/gvcf"
+gvcf_dir: "/mnt/gpfs1/Users/yangjinxurong/projects/WGS/data/gvcf"
+outdir: "/mnt/gpfs1/Users/yangjinxurong/projects/WGS/snp/results"
 
-# 全基因组参考 Fasta 绝对路径 (对应 GATK -R 参数)
-bed_dir: "/mnt/gpfs1/Users/yangjinxurong/projects/WGS/joint_snp/data/hg38_chrom_beds/"
-genome_version: "hg19_decoy"
-# 结果输出总目录
-outdir: "/mnt/gpfs1/Users/yangjinxurong/projects/WGS/joint_snp/results/joint_calling_SNP"
+skip_header_normalization: true
+reheadered_gvcf_dir: "/mnt/gpfs1/Users/yangjinxurong/projects/WGS/snp/results/gvcf_header_normalization/"
+
+joint_call_max_forks: 2
+annotation_max_forks: 2
+
+glnexus_mem_gbytes: 64
+process_max_forks: 8
+joint_filter_expr: "QUAL >= 20"
+
+genome_version: "GRCh38"
+annotation_max_variants: 0
+rare_af_threshold: 0.01
