@@ -1,6 +1,6 @@
 nextflow.enable.dsl = 2
 
-params.project_root = "/mnt/gpfs1/Users/yangjinxurong/projects/WGS/snp/"
+params.project_root = "/mnt/gpfs1/Users/yangjinxurong/pipeline/WGS/snp/"
 
 def chr_list = []
 if (params.genome_version == 'hg19_decoy' || params.genome_version == 'b37') {
@@ -70,10 +70,8 @@ workflow {
         }
 
     MERGE_ANNOTATED_VCF(merge_annotated_in)
-    cohort_vcf_ch = MERGE_ANNOTATED_VCF.out.cohort_vcf
-    cohort_vcf = cohort_vcf_ch.first()
-    cohort_vcf_only = cohort_vcf.map { vcf, tbi -> vcf }
-    STANDARDIZE_ANNOTATION(cohort_vcf_only)
+    // MERGE_ANNOTATED_VCF emits the merged VCF as `annotated_vcf`.
+    STANDARDIZE_ANNOTATION(MERGE_ANNOTATED_VCF.out.annotated_vcf)
 }
 
 process DISCOVER_GVCFS {
@@ -270,10 +268,11 @@ process ANNOTATE_CHR {
     path "versions.yml", emit: versions
 
     script:
-    // Imported-cohort jobs use 1..22/X/Y as their task labels, while the
-    // compatibility gnomAD filenames retain chr1..chr22/chrX/chrY.
+    // The available gnomAD v4.1 genome resources cover autosomes/X/Y only.
+    // chrM is still annotated by VEP, but has no gnomAD custom source.
     def gnomadChr = chr.toString().startsWith('chr') ? chr : "chr${chr}"
     def gnomadVcf = "${params.gnomad_v4_genomes_vep_dir}/${params.gnomad_v4_genomes_filename_prefix}.${gnomadChr}.nochr.vcf.gz"
+    def gnomadCustom = (chr.toString() in ['chrM', 'M', 'MT']) ? '' : "--custom file=${gnomadVcf},short_name=gnomADg,format=vcf,type=exact,coords=0,fields=AF%AF_eas"
     """
     source /mnt/gpfs/Users/yangjinxurong/software/miniconda3/bin/activate /mnt/gpfs/Users/yangjinxurong/software/miniconda3/envs/vep113_env
 
@@ -293,7 +292,7 @@ process ANNOTATE_CHR {
         --plugin MaxEntScan,${params.maxentscan_dir} \\
         --plugin SpliceAI,snv=${params.spliceai_snv},indel=${params.spliceai_indel} \\
         --plugin LoF,loftee_path:${params.loftee_dir},gerp_bigwig:${params.loftee_gerp_bigwig},human_ancestor_fa:${params.loftee_human_ancestor_fa},conservation_file:${params.loftee_conservation_file} \\
-        --custom file=${gnomadVcf},short_name=gnomADg,format=vcf,type=exact,coords=0,fields=AF%AF_eas \\
+        --plugin AlphaMissense,file=${params.alphamissense_tsv} ${gnomadCustom} \\
         --custom file=${params.clinvar_vcf},short_name=ClinVar,format=vcf,type=exact,coords=0,fields=CLNSIG%CLNREVSTAT%CLNDN%CLNSIGCONF
 
     ${params.snpeff_java} -jar ${params.snpeff_jar} \\
